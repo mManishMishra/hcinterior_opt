@@ -267,12 +267,13 @@ const Home = ({
         {isVideo ? (
           <video
             width="100%"
-           
             className="object-fit-cover home_video_banner"
             autoPlay
             loop
             muted
-            id="myVideo"
+            playsInline
+            preload={index === 0 ? "auto" : "none"}
+            id={index === 0 ? "myVideo" : undefined}
           >
             <source
               src={banner?.banner_image ?? "/images/home-banner-1.mp4"}

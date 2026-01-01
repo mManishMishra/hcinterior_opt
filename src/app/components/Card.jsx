@@ -1,4 +1,4 @@
-import "../../../public/style/style.css";
+// CSS is loaded centrally in layout.js to prevent duplicate imports
 import Image from "next/image";
 const Card = ({
     cardNameALl,

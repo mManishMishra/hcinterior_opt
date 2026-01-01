@@ -1,7 +1,7 @@
 "use client";
 
+// react-toastify CSS is now loaded in layout.js to prevent duplicate imports
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import ClientProvider from "../store/ClientProvider";
 
 export default function ClientLayout({ children }) {

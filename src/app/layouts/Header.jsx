@@ -1,6 +1,6 @@
+// CSS is loaded centrally in layout.js to prevent duplicate imports
 import { IoIosCall } from "react-icons/io";
 import Toggle from "../components/Toggle";
-import "../globals.css";
 import Image from "next/image";
 const Header = () => {
   return (

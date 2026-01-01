@@ -1,7 +1,5 @@
-import "./globals.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-// import "../../public/style/style.css";
-import "../../public/style/style.css"
+// CSS is now loaded centrally in layout.js to prevent duplicate imports
+// This improves performance by reducing bundle size and preventing render-blocking
 import MainLayout from "./layouts/MainLayout";
 import Home from "./home/page";
 import BootstrapTooltips from "./common/BootstrapTooltips";

@@ -1,5 +1,29 @@
- @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Outfit:wght@400;600&display=swap');
+ /* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Outfit:wght@400;600&display=swap'); */
 
+:root {
+  --font-poppins: 'Poppins', sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  --font-greatvibes: 'Great Vibes', cursive;
+}
+
+/* default text */
+body {
+  font-family: var(--font-poppins);
+}
+
+/* headings */
+h1, h2, h3 {
+  font-family: var(--font-outfit);
+}
+
+/* SCRIPT / cursive text (this fixes "High") */
+.font_cursive,
+.font-script,
+.about_high,
+.aboutHigh,
+.highText {
+  font-family: var(--font-greatvibes) !important;
+}
 
 
 
@@ -7,7 +31,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: poppins;
+  font-family: var(--font-poppins, 'Poppins', sans-serif);
 }
 /* @font-face {
   font-family: futura_font;
@@ -36,7 +60,7 @@ a {
 h4,
 h5,
 h6 {
-  font-family: poppins;
+  font-family: var(--font-poppins, 'Poppins', sans-serif);
   font-weight: 600 !important;
 }
 
@@ -47,19 +71,19 @@ h5 {
 h1 {
   font-size: 50px;
   color: #171717;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
 }
 
 h2,
 h3 {
   font-size: 50px;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
   font-weight: 600 !important;
 }
 
 li {
   padding: 0 10px;
-  font-family: poppins;
+  font-family: var(--font-poppins, 'Poppins', sans-serif);
   font-size: 15px;
 }
 /* body {
@@ -70,7 +94,7 @@ li {
 }
 
 .nav-link {
-  font-family: poppins !important;
+  font-family: var(--font-poppins, 'Poppins', sans-serif) !important;
   color: rgb(0, 0, 0) !important;
   font-size: 20px !important;
   padding-left: 0.8rem;
@@ -692,8 +716,11 @@ li {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background-image: url(../images/room-with-blue.webp);
+  background-image: none;
   height: 80vh;
+}
+.sectionbg.bg-loaded {
+  background-image: url("../images/room-with-blue.webp");
 }
 
 .secbgimg1 {
@@ -1631,9 +1658,9 @@ display: none;
     height: 280px;
   }
 
-  .font_stylish {
+  /* .font_stylish {
     font-size: 40px !important;
-  }
+  } */
 
   .label_toooltiip {
     font-size: 16px !important;
@@ -1861,9 +1888,9 @@ display: none;
     width: 100%;
     height: 280px;
   }
-  .font_stylish {
+  /* .font_stylish {
     font-size: 65px;
-  }
+  } */
   .whatwedo_card {
     width: 270px;
     height: 430px;
