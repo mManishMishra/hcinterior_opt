@@ -147,8 +147,8 @@ export default function RootLayout({ children }) {
           gtag('config', 'G-MJZK1MXG9E');`}
         </Script>
 
-        {/* FAQ Schema */}
-        <Script id="faq-schema" type="application/ld+json" strategy="beforeInteractive">
+        {/* FAQ Schema - lazy loaded to reduce initial HTML size */}
+        <Script id="faq-schema" type="application/ld+json" strategy="lazyOnload">
           {JSON.stringify({
             "@context": "https://schema.org/",
             "@type": "FAQPage",
@@ -206,11 +206,11 @@ export default function RootLayout({ children }) {
           })}
         </Script>
 
-        {/* Organization Schema */}
+        {/* Organization Schema - lazy loaded to reduce initial HTML size */}
         <Script
           id="org-schema"
           type="application/ld+json"
-          strategy="beforeInteractive"
+          strategy="lazyOnload"
         >
           {JSON.stringify({
             "@context": "https://schema.org",

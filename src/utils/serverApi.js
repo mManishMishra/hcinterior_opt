@@ -12,7 +12,10 @@ export async function fetchHomepageBanner() {
   try {
     const baseURL = getApiBaseUrl();
     const response = await fetch(`${baseURL}/cms-content/homepage_banner`, {
-      cache: 'no-store', // Always fetch fresh data for banner
+      // Use force-cache with revalidation for better performance
+      // Revalidates every hour (3600 seconds) to keep content fresh
+      cache: 'force-cache',
+      next: { revalidate: 3600 },
       credentials: 'include',
     });
     
@@ -33,7 +36,10 @@ export async function fetchHomePageContent() {
   try {
     const baseURL = getApiBaseUrl();
     const response = await fetch(`${baseURL}/cms-content/home_page_content_what_we_are`, {
-      cache: 'no-store',
+      // Use force-cache with revalidation for better performance
+      // Revalidates every hour to keep content fresh while improving load times
+      cache: 'force-cache',
+      next: { revalidate: 3600 },
       credentials: 'include',
     });
     
@@ -54,7 +60,9 @@ export async function fetchSeoData() {
   try {
     const baseURL = getApiBaseUrl();
     const response = await fetch(`${baseURL}/content-manager/slug/design-idea`, {
-      cache: 'no-store',
+      // SEO data changes less frequently, can cache longer
+      cache: 'force-cache',
+      next: { revalidate: 7200 }, // Revalidate every 2 hours
       credentials: 'include',
     });
     

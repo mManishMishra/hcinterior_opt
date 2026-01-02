@@ -1,6 +1,5 @@
 "use client";
 import RowImage from "../components/RowImage";
-import Head from "next/head";
 import { IoIosShareAlt } from "react-icons/io";
 import Card from "../components/Card";
 import { format, isValid, parseISO } from "date-fns";
@@ -62,10 +61,11 @@ const Home = ({
   const [seoData, setSeoData] = useState({});
   const [error, setError] = useState(null);
 
-  // Defer non-critical API calls - load after initial render
+  // Defer non-critical API calls - load after initial render using requestIdleCallback
   useEffect(() => {
-    // Use setTimeout to defer non-critical calls
-    const timer = setTimeout(() => {
+    // Use requestIdleCallback for better performance when browser is idle
+    // Falls back to setTimeout if requestIdleCallback is not available
+    const scheduleNonCriticalCalls = (deadline) => {
       // Fetch designer choice (non-critical)
       const fetchDesignIdea = async () => {
         try {
@@ -101,9 +101,17 @@ const Home = ({
       fetchDesignIdea();
       fetch_h3d_gallery();
       fetchSeoData();
-    }, 100); // Small delay to allow initial render
+    };
 
-    return () => clearTimeout(timer);
+    // Use requestIdleCallback if available, otherwise use setTimeout
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleCallbackId = requestIdleCallback(scheduleNonCriticalCalls, { timeout: 2000 });
+      return () => cancelIdleCallback(idleCallbackId);
+    } else {
+      // Fallback to setTimeout for browsers without requestIdleCallback
+      const timer = setTimeout(scheduleNonCriticalCalls, 100);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   // Sort records by ID in descending order (newest first)
@@ -117,14 +125,14 @@ const Home = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(formData);
+    // Removed console.log for production performance
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
     setFormData((prevData) => ({ ...prevData, termsAndConditions: checked }));
-    console.log("Checkbox state:", checked);
+    // Removed console.log for production performance
   };
 
   const handleSubmit = async (e) => {
@@ -179,23 +187,28 @@ const Home = ({
 
   const [blogs, setBlogs] = useState([]);
 
-  // Fetch only the latest 3 blogs - deferred
+  // Fetch only the latest 3 blogs - deferred using requestIdleCallback
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const fetchLatestBlogs = async () => {
-        try {
-          const response = await api.get("/cms-blog");
-          if (response.status === 200) {
-            setBlogs(response.data.slice(0, 3));
-          }
-        } catch (err) {
-          setError(err.message || "Failed to load blogs.");
+    const fetchLatestBlogs = async () => {
+      try {
+        const response = await api.get("/cms-blog");
+        if (response.status === 200) {
+          setBlogs(response.data.slice(0, 3));
         }
-      };
-      fetchLatestBlogs();
-    }, 200); // Defer blog loading
+      } catch (err) {
+        setError(err.message || "Failed to load blogs.");
+      }
+    };
 
-    return () => clearTimeout(timer);
+    // Use requestIdleCallback if available, otherwise use setTimeout
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const idleCallbackId = requestIdleCallback(fetchLatestBlogs, { timeout: 3000 });
+      return () => cancelIdleCallback(idleCallbackId);
+    } else {
+      // Fallback to setTimeout for browsers without requestIdleCallback
+      const timer = setTimeout(fetchLatestBlogs, 200);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const formatDate = (dateString) => {
@@ -208,42 +221,7 @@ const Home = ({
 
   return (
     <>
-      <head>
-        <title>Top Interior Designers In Delhi NCR For Home	</title>
-        <meta
-          name="description"
-          content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"
-        />
-        <link rel="canonical" href="https://hcinterior.in" />	
-        <meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
-        <meta property="og:locale" content="en_US"/>
-        <meta property="og:type" content="website"/>
-        <meta property="og:title" content="Top Interior Designers In Delhi NCR For Home"/>
-        <meta property="og:description" content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"/>
-        <meta property="og:locale" content="en_US"/>
-        <meta property="og:type" content="website"/>
-        <meta property="og:url" content="https://hcinterior.in"/>
-        <meta property="og:site_name" content="High Creation Interior"/>
-        <meta property="og:image" content="https://apidev.hcinterior.in/uploads/cms-content/image-1742221446171-185128721.png"/>
-        <meta property="og:image:secure_url" content="https://apidev.hcinterior.in/uploads/cms-content/image-1742221446171-185128721.png"/>
-        <meta property="og:image:width" content="624"/>
-        <meta property="og:image:height" content="380"/>
-        <meta property="og:image:alt" content="best interior designers in noida and gurugram"/>
-        <meta property="og:image:type" content="image/png"/>
-        <meta property="article:published_time" content="2022-03-31T06:00:17+00:00"/>
-        <meta property="article:modified_time" content="2025-06-07T13:03:32+00:00"/>
-
-        <meta name="twitter:card" content="summary_large_image"/>
-        <meta name="twitter:title" content="Top Interior Designers In Delhi NCR For Home"/>
-        <meta name="twitter:description" content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"/>
-        <meta name="twitter:image" content="https://hcinterior.in/images/new_hc_logo.png"/>
-        <meta name="twitter:label1" content="Written by"/>
-        <meta name="twitter:data1" content="High Creation Interior"/>
-        <meta name="twitter:label2" content="Time to read"/>
-        <meta name="twitter:data2" content="6 minutes"/>
-
-
-      </head>
+      {/* Metadata is now handled via generateMetadata in page.js (server component) */}
       <div className={isModalOpen ? "blur-bg" : ""}>
         <section className="position-relative">
           {!homepageBannerData || homepageBannerData.length === 0 ? (
@@ -288,6 +266,7 @@ const Home = ({
             width={1920}
             height={800}
             priority={index === 0}
+            sizes="100vw"
             style={{ width: '100%', height: 'auto' }}
           />
         )}
