@@ -1,8 +1,6 @@
 import Image from "next/image";
-import { memo } from "react";
 
-// Memoize RowImage component to prevent unnecessary re-renders
-const RowImage = memo((props) => {
+const RowImage = (props) => {
   return (
     <div className="container">
       <div className="row mx-0">
@@ -19,23 +17,21 @@ const RowImage = memo((props) => {
           }
         >
           <Image
-            src={props.ImgAbout || "/images/default.jpg"}
+            src={props.ImgAbout}
             className={props.ImgAboutClass}
-            alt={props.imgAlt || "Image"}
+            alt={props.imgAlt}
             width={600}
             height={400}
-            priority={false}
-            sizes="(max-width: 768px) 100vw, 50vw"
-            style={{ width: '100%', height: 'auto' }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
           />
         </div>
         <div
           className={
-            "d-flex align-items-center col-lg-" +
+            +"d-flex align-items-center col-lg-" +
             (12 - props.imageColLg) +
             " col-md-" +
             (12 - props.imageColMd) +
-            " col-" +
+            " col" +
             (12 - props.imageCol)
           }
         >
@@ -60,8 +56,6 @@ const RowImage = memo((props) => {
       </div>
     </div>
   );
-});
-
-RowImage.displayName = 'RowImage';
+};
 
 export default RowImage;

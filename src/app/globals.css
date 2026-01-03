@@ -1,4 +1,14 @@
-/* Fonts are loaded via next/font/google in layout.js - no need for duplicate @font-face */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Outfit:wght@400;600&display=swap');
+
+
+@font-face {
+  font-family: 'Great Vibes';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Great Vibes'), local('GreatVibes-Regular'),
+       url('https://fonts.gstatic.com/s/greatvibes/v21/RWmMoKWR9v4ksMfaWd_JN9XFiaQoDmlrNlY.woff2') format('woff2');
+}
 
 
 /* @font-face {
@@ -128,16 +138,11 @@
       padding: 10px 0;
     }
 
-    /* .font_stylish {
+    .font_stylish {
       font-family: 'Great Vibes', cursive;
       font-size: 60px;
       font-weight: 400 !important;
-    } */
-.font_stylish {
-  font-family: var(--font-greatvibes) !important;
-  font-size: 60px;        /* keep existing size */
-  font-weight: 400 !important;
-}
+    }
 
 
   a{
@@ -145,7 +150,7 @@
   }
 
   h4,h5,h6{
-    font-family: var(--font-poppins, 'Poppins', sans-serif);
+    font-family: poppins;
     font-weight: 600 !important;
     /* color:#3b3c47; */
   }
@@ -156,16 +161,16 @@
   h1{
     font-size: 50px;
     color: #171717;
-    font-family: var(--font-poppins, 'Poppins', sans-serif);
+    font-family: poppins;
   }
   h2,h3{
     font-size: 50px !important;
-    font-family: var(--font-poppins, 'Poppins', sans-serif);
+    font-family: poppins;
     font-weight: 600  !important;
   }
 
   p{
-    font-family: var(--font-poppins, 'Poppins', sans-serif);
+    font-family: poppins;
     font-weight: 400 !important;
     font-size: 15px;
     color: rgb(0, 0, 0);

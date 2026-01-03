@@ -4,7 +4,6 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import { FaBars } from "react-icons/fa";
 import axios from "axios"; // Import axios for API calls
 import api from "@/utils/api";
-import Image from "next/image";
 const Toggle = () => {
   const [lookMenu, setLookMenu] = useState([]);
   const [error, setError] = useState("");
@@ -66,13 +65,12 @@ const Toggle = () => {
         <div className="d-flex justify-content-between container-fluid px-lg-5">
           <div className="logo ">
             <a href="/" className="d-block d-lg-none">
-              <Image
+              <img
                 src="/images/iconsHC.png"
                 className="bg-white mt-3"
                 width={90}
                 height={90}
                 alt="hc-logo"
-                priority={false}
               />
             </a>
           </div>

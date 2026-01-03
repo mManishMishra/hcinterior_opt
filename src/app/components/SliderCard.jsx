@@ -1,4 +1,6 @@
 "use client";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import MainLayout from "../layouts/MainLayout";
 import Slider from "react-slick";
 import { MdOutlineChevronLeft, MdKeyboardArrowRight } from "react-icons/md";
@@ -25,21 +27,6 @@ const PrevArrow = ({ onClick }) => {
 };
 const SliderCard = (props) => {
   const [sliderListData, setSliderListData] = useState([]);
-
-  // Dynamically load slick CSS to avoid render-blocking
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const link1 = document.createElement('link');
-      link1.rel = 'stylesheet';
-      link1.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css';
-      document.head.appendChild(link1);
-
-      const link2 = document.createElement('link');
-      link2.rel = 'stylesheet';
-      link2.href = 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css';
-      document.head.appendChild(link2);
-    }
-  }, []);
 
   const fetchContentManagerPages = useCallback(async () => {
     try {

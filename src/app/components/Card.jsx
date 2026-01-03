@@ -1,9 +1,7 @@
-// CSS is loaded centrally in layout.js to prevent duplicate imports
+import "../../../public/style/style.css";
 import Image from "next/image";
-import { memo } from "react";
 
-// Memoize Card component to prevent unnecessary re-renders in lists
-const Card = memo(({
+const Card = ({
     cardNameALl,
     imgSrc,
     imgClass,
@@ -22,16 +20,7 @@ const Card = memo(({
         <div>
             <a href={cardLinkName}>
             <div className={cardNameALl}>
-                <Image 
-                    src={imgSrc || "/images/default.jpg"} 
-                    className={imgClass} 
-                    alt={imgAlt || "Card image"}
-                    width={400}
-                    height={300}
-                    priority={false}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    style={{ width: '100%', height: 'auto' }}
-                 />
+                <Image src={imgSrc} className={imgClass} alt={imgAlt} width={400} height={300} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 {/* {imgSrc ? <img src={imgSrc} className="offerimg" alt={imgAlt} /> : null} */}
                 <div className="px-3 pt-3 card-body">
                     <span>{spanTitle}</span>
@@ -45,8 +34,6 @@ const Card = memo(({
             </a>
         </div>
     );
-});
-
-Card.displayName = 'Card';
+};
 
 export default Card;

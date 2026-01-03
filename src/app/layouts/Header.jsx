@@ -1,7 +1,6 @@
-// CSS is loaded centrally in layout.js to prevent duplicate imports
 import { IoIosCall } from "react-icons/io";
 import Toggle from "../components/Toggle";
-import Image from "next/image";
+import "../globals.css";
 const Header = () => {
   return (
     <>
@@ -11,13 +10,15 @@ const Header = () => {
             <nav className="navbar navbar-expand-lg p-0 ">
               <div className="container-fluid">
                 <a className="navbar-brand me-lg-3 me-0" href="/">
-                  <Image
+                  <img
                     src="/images/new_hc_logo.png"
                     width={90}
                     height={90}
                     alt="High Creation Interior Logo"
                     className="p-2"
-                    priority
+                    fetchpriority="high"
+                    loading="eager"
+                    data-no-lazy="1"
                   />
                 </a>
                 <button

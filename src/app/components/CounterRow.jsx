@@ -1,20 +1,17 @@
 import CountUp from "react-countup";
-import Image from "next/image";
-
 const CounterRow = (props) => {
   return (
     <div>
       <div className="container">
         <div className="row mx-0">
           <div className="col-lg-6">
-            <Image
-              src={props.ImgCounter || "/images/default.jpg"}
+            <img
+              src={props.ImgCounter}
               className={props.ImgCounterClass}
-              alt={props.imgAltCounter || "Counter image"}
-              width={600}
-              height={400}
-              priority={false}
-              style={{ width: '100%', height: 'auto' }}
+              alt={props.imgAltCounter}
+              fetchpriority="high"
+              loading="eager"
+              data-no-lazy="1"
             />
           </div>
           <div className="col-lg-6 px-0">

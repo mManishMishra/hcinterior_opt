@@ -1,42 +1,93 @@
 "use client";
 import RowImage from "../components/RowImage";
+import Head from "next/head";
 import { IoIosShareAlt } from "react-icons/io";
 import Card from "../components/Card";
 import { format, isValid, parseISO } from "date-fns";
-import VideoCardHome from "../components/VideoCardHome";
 import BgImageCard from "../components/BgImageCard";
 import { FaComments } from "react-icons/fa";
-import Blogs from "../components/Blogs";
 import RoomOfice from "../components/RoomOfice";
+import SliderCard from "../components/SliderCard";
 import { MdKeyboardArrowRight } from "react-icons/md";
 import IconBox from "../components/IconBox";
-import CounterRow from "../components/CounterRow";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import api from "@/utils/api";
 import HeadComponent from "../components/HeadComponent";
 import Image from "next/image";
 import dynamic from "next/dynamic";
-import { BannerSkeleton, CardSkeleton, ContentSkeleton } from "../components/SkeletonLoader";
 
-// Lazy-load below-the-fold components
-const SliderCard = dynamic(() => import("../components/SliderCard"), {
-  ssr: false,
-  loading: () => <div className="container my-5"><div className="text-center">Loading...</div></div>
+// Dynamic imports with code splitting
+const VideoCardHome = dynamic(() => import("../components/VideoCardHome"), {
+  loading: () => <div className="text-center p-4">Loading video...</div>,
+});
+
+const CounterRow = dynamic(() => import("../components/CounterRow"), {
+  loading: () => <div className="text-center p-4">Loading...</div>,
+});
+
+const Blogs = dynamic(() => import("../components/Blogs"), {
+  loading: () => <div className="text-center p-4">Loading...</div>,
 });
 
 const VideoTestimonialSlider = dynamic(() => import("../components/VideoTestimonialSlider"), {
-  ssr: false,
-  loading: () => <div className="container-fluid my-5"><div className="text-center">Loading videos...</div></div>
+  loading: () => <div className="text-center p-4">Loading testimonials...</div>,
 });
 
 const ContactUsPopUp = dynamic(() => import("../components/ContactUsPopUp"), {
-  ssr: false
+  ssr: false,
+  loading: () => null,
 });
 
-const Home = ({ 
-  initialBannerData = null, 
-  initialHomePageContent = [] 
-}) => {
+// Lazy load wrapper component for viewport-based loading
+const LazyLoadSection = ({ children, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: "200px", // Start loading 200px before entering viewport
+        threshold: 0.01,
+      }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+      observer.disconnect();
+    };
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {isVisible ? children : <div style={{ minHeight: "200px" }} />}
+    </div>
+  );
+};
+
+const Home = () => {
+  // const [pageTitle, setPageTitle] = useState("homehc - My Website");
+  // const [pageDescription, setPageDescription] = useState(
+  //   "Learn team, and values."
+  // );
+
+  // useEffect(() => {
+  //   document.title = pageTitle;
+  // }, [pageTitle]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -50,68 +101,98 @@ const Home = ({
   const [submissionError, setSubmissionError] = useState("");
   const [submissionMessage, setSubmissionMessage] = useState("");
 
-  // Use server-fetched data or fallback to state
-  const [homepageBannerData, setHomepageBannerData] = useState(initialBannerData);
-  const [HomePageContent, setHomePageContent] = useState(initialHomePageContent);
+  const [homepageBannerData, setHomepageBannerData] = useState();
 
-  // Non-critical data - loaded after initial render
+  const fetchContentManagerPages = useCallback(async () => {
+    try {
+      const response = await api.get("/cms-content/homepage_banner", {});
+      if (response.data && response.data.json_content) {
+        setHomepageBannerData(response.data?.json_content);
+      }
+      setLoading(false);
+    } catch (err) {
+      toast.error(err.message ?? "Failed to fetch data. Please try again.");
+      setLoading(false);
+    }
+  }, []);
+
+
   const [designIdea, setDesignIdea] = useState([]);
   const [h3d_gallery, setH3d_gallery] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [seoData, setSeoData] = useState({});
-  const [error, setError] = useState(null);
+  const [HomePageContent, setHomePageContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+   const [seoData, setSeoData] = useState({});
 
-  // Defer non-critical API calls - load after initial render using requestIdleCallback
   useEffect(() => {
-    // Use requestIdleCallback for better performance when browser is idle
-    // Falls back to setTimeout if requestIdleCallback is not available
-    const scheduleNonCriticalCalls = (deadline) => {
-      // Fetch designer choice (non-critical)
-      const fetchDesignIdea = async () => {
-        try {
-          const response = await api.get("/cms-parent-child/designer_choice");
-          setDesignIdea(response.data);
-        } catch (err) {
-          console.error("Error fetching design idea:", err);
-          setError("Failed to load design ideas. Please try again.");
-        }
-      };
+    fetchContentManagerPages();
+  }, [fetchContentManagerPages]);
 
-      // Fetch h3d gallery (non-critical)
-      const fetch_h3d_gallery = async () => {
-        try {
-          const response = await api.get("/cms-parent-child/h3d_gallery");
-          setH3d_gallery(response.data);
-        } catch (err) {
-          console.error("Error fetching h3d gallery:", err);
-        }
-      };
-
-      // Fetch SEO data (non-critical)
-      const fetchSeoData = async () => {
-        try {
-          const response = await api.get("/content-manager/slug/design-idea");
-          setSeoData(response.data);
-        } catch (err) {
-          console.error("Error fetching SEO data:", err);
-        }
-      };
-
-      // Execute all non-critical calls
-      fetchDesignIdea();
-      fetch_h3d_gallery();
-      fetchSeoData();
+  useEffect(() => {
+    setLoading(true);
+    const fetchDesignIdea = async () => {
+      try {
+        const response = await api.get("/cms-parent-child/designer_choice");
+        setDesignIdea(response.data);
+      } catch (err) {
+        console.error("Error fetching design idea:", err);
+        setError("Failed to load design ideas. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Use requestIdleCallback if available, otherwise use setTimeout
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleCallbackId = requestIdleCallback(scheduleNonCriticalCalls, { timeout: 2000 });
-      return () => cancelIdleCallback(idleCallbackId);
-    } else {
-      // Fallback to setTimeout for browsers without requestIdleCallback
-      const timer = setTimeout(scheduleNonCriticalCalls, 100);
-      return () => clearTimeout(timer);
-    }
+    fetchDesignIdea();
+  }, []);
+
+
+  useEffect(() => {
+    setLoading(true);
+    const fetch_h3d_gallery = async () => {
+      try {
+        const response = await api.get("/cms-parent-child/h3d_gallery");
+        setH3d_gallery(response.data);
+        console.log('response.data', response.data);
+      } catch (err) {
+        console.error("Error fetching design idea:", err);
+        setError("Failed to load design ideas. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch_h3d_gallery();
+  }, []);
+
+  useEffect(() => {
+    const fetchSeoData = async () => {
+      try {
+        const response = await api.get("/content-manager/slug/design-idea");
+        setSeoData(response.data);
+      } catch (err) {
+        console.error("Error fetching SEO data:", err);
+      }
+    };
+
+    fetchSeoData();
+  }, []);
+
+
+  useEffect(() => {
+    setLoading(true);
+    const fetch_HomePageContent = async () => {
+      try {
+        const response = await api.get("/cms-content/home_page_content_what_we_are");
+        setHomePageContent(response.data);
+        console.log('fetch_HomePageContent', response.data);
+      } catch (err) {
+        console.error("Error fetching design idea:", err);
+        setError("Failed to load design ideas. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetch_HomePageContent();
   }, []);
 
   // Sort records by ID in descending order (newest first)
@@ -125,14 +206,14 @@ const Home = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // Removed console.log for production performance
+    console.log(formData);
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const handleCheckboxChange = (e) => {
     const { checked } = e.target;
     setFormData((prevData) => ({ ...prevData, termsAndConditions: checked }));
-    // Removed console.log for production performance
+    console.log("Checkbox state:", checked);
   };
 
   const handleSubmit = async (e) => {
@@ -186,30 +267,24 @@ const Home = ({
   }, []);
 
   const [blogs, setBlogs] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Fetch only the latest 3 blogs - deferred using requestIdleCallback
-  useEffect(() => {
-    const fetchLatestBlogs = async () => {
-      try {
-        const response = await api.get("/cms-blog");
-        if (response.status === 200) {
-          setBlogs(response.data.slice(0, 3));
-        }
-      } catch (err) {
-        setError(err.message || "Failed to load blogs.");
+  // Fetch only the latest 3 blogs
+  const fetchLatestBlogs = useCallback(async () => {
+    try {
+      const response = await api.get("/cms-blog"); // API to fetch all blogs
+      if (response.status === 200) {
+        // Get only the latest 3 blogs
+        setBlogs(response.data.slice(0, 3)); // Slice to get only the first 3 blogs
       }
-    };
-
-    // Use requestIdleCallback if available, otherwise use setTimeout
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const idleCallbackId = requestIdleCallback(fetchLatestBlogs, { timeout: 3000 });
-      return () => cancelIdleCallback(idleCallbackId);
-    } else {
-      // Fallback to setTimeout for browsers without requestIdleCallback
-      const timer = setTimeout(fetchLatestBlogs, 200);
-      return () => clearTimeout(timer);
+    } catch (err) {
+      setError(err.message || "Failed to load blogs.");
     }
   }, []);
+
+  useEffect(() => {
+    fetchLatestBlogs(); // Call the function to fetch the latest blogs
+  }, [fetchLatestBlogs]);
 
   const formatDate = (dateString) => {
     // Ensure the dateString is not empty and parse it
@@ -221,19 +296,51 @@ const Home = ({
 
   return (
     <>
-      {/* Metadata is now handled via generateMetadata in page.js (server component) */}
+      <head>
+        <title>Top Interior Designers In Delhi NCR For Home	</title>
+        <meta
+          name="description"
+          content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"
+        />
+        <link rel="canonical" href="https://hcinterior.in" />	
+        <meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:type" content="website"/>
+        <meta property="og:title" content="Top Interior Designers In Delhi NCR For Home"/>
+        <meta property="og:description" content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"/>
+        <meta property="og:locale" content="en_US"/>
+        <meta property="og:type" content="website"/>
+        <meta property="og:url" content="https://hcinterior.in"/>
+        <meta property="og:site_name" content="High Creation Interior"/>
+        <meta property="og:image" content="https://apidev.hcinterior.in/uploads/cms-content/image-1742221446171-185128721.png"/>
+        <meta property="og:image:secure_url" content="https://apidev.hcinterior.in/uploads/cms-content/image-1742221446171-185128721.png"/>
+        <meta property="og:image:width" content="624"/>
+        <meta property="og:image:height" content="380"/>
+        <meta property="og:image:alt" content="best interior designers in noida and gurugram"/>
+        <meta property="og:image:type" content="image/png"/>
+        <meta property="article:published_time" content="2022-03-31T06:00:17+00:00"/>
+        <meta property="article:modified_time" content="2025-06-07T13:03:32+00:00"/>
+
+        <meta name="twitter:card" content="summary_large_image"/>
+        <meta name="twitter:title" content="Top Interior Designers In Delhi NCR For Home"/>
+        <meta name="twitter:description" content="Home interior designers in Delhi NCR - Elevate your living space with best interior design company in Noida & Delhi NCR. Book free consultation today"/>
+        <meta name="twitter:image" content="https://hcinterior.in/images/new_hc_logo.png"/>
+        <meta name="twitter:label1" content="Written by"/>
+        <meta name="twitter:data1" content="High Creation Interior"/>
+        <meta name="twitter:label2" content="Time to read"/>
+        <meta name="twitter:data2" content="6 minutes"/>
+
+
+      </head>
       <div className={isModalOpen ? "blur-bg" : ""}>
         <section className="position-relative">
-          {!homepageBannerData || homepageBannerData.length === 0 ? (
-            <BannerSkeleton />
-          ) : (
-            <div
-              id="carouselExampleAutoplaying"
-              className="carousel slide"
-              data-bs-ride="carousel"
-            >
-              <div className="carousel-inner">
-                {homepageBannerData?.slice(0, 3).map((banner, index) => {
+          <div
+            id="carouselExampleAutoplaying"
+            className="carousel slide"
+            data-bs-ride="carousel"
+          >
+            <div className="carousel-inner">
+   {homepageBannerData?.slice(0, 3).map((banner, index) => {
     // Check if banner_image is a video (MP4 format)
     const isVideo = banner?.banner_image?.endsWith(".mp4");
 
@@ -245,13 +352,12 @@ const Home = ({
         {isVideo ? (
           <video
             width="100%"
+           
             className="object-fit-cover home_video_banner"
             autoPlay
             loop
             muted
-            playsInline
-            preload={index === 0 ? "auto" : "none"}
-            id={index === 0 ? "myVideo" : undefined}
+            id="myVideo"
           >
             <source
               src={banner?.banner_image ?? "/images/home-banner-1.mp4"}
@@ -259,16 +365,17 @@ const Home = ({
             />
           </video>
         ) : (
-          <Image
-            src={banner?.banner_image ?? "/images/home-banner-1.png"}
-            className="d-block carousel_img"
-            alt="carousel1"
-            width={1920}
-            height={800}
-            priority={index === 0}
-            sizes="100vw"
-            style={{ width: '100%', height: 'auto' }}
-          />
+          <div className="position-relative w-100" style={{ aspectRatio: "21/9", minHeight: "500px" }}>
+            <Image
+              src={banner?.banner_image ?? "/images/home-banner-1.png"}
+              className="d-block carousel_img object-fit-cover"
+              alt="carousel1"
+              fill
+              priority={index === 0}
+              sizes="100vw"
+              style={{ objectFit: "cover" }}
+            />
+          </div>
         )}
 
         <div className="pt-0 carousel-caption d-md-block">
@@ -336,7 +443,6 @@ const Home = ({
               <span className="visually-hidden">Next</span>
             </button>
           </div>
-          )}
 
           <div className="rotate_div container-fluid">
             <div className="sssss ms-auto me-0">
@@ -348,26 +454,22 @@ const Home = ({
         </section>
 
         <section className="my-5 about_wrapper">
-          {!HomePageContent || HomePageContent.length === 0 ? (
-            <ContentSkeleton />
-          ) : (
-            <RowImage
-              imageColLg="6"
-              imageColXl="6"
-              imageColMd="6"
-              imageCol="12"
-              ImgAbout={HomePageContent[2]?.json_content?.image}
-              ImgAboutClass={"aboout_img object-fit-contain w-100"}
-              imgAlt="About"
-              titleHeading={HomePageContent[2]?.json_content?.title}
-              subHeading={HomePageContent[2]?.json_content?.description}
-              subHeadingClass="font_stylish ps-3"
-              description={HomePageContent[2]?.json_content?.designation}
-              textAboutBtn="READ MORE"
-              btnLink="/about-us"
-              textAboutBtnCLass="read_morebtn"
-            />
-          )}
+          <RowImage
+            imageColLg="6"
+            imageColXl="6"
+            imageColMd="6"
+            imageCol="12"
+            ImgAbout={HomePageContent[2]?.json_content?.image}
+            ImgAboutClass={"aboout_img object-fit-contain w-100"}
+            imgAlt="About"
+            titleHeading={HomePageContent[2]?.json_content?.title}
+            subHeading={HomePageContent[2]?.json_content?.description}
+            subHeadingClass="font_stylish ps-3"
+            description={HomePageContent[2]?.json_content?.designation}
+            textAboutBtn="READ MORE"
+            btnLink="/about-us"
+            textAboutBtnCLass="read_morebtn"
+          />
         </section>
 
         <div className="my-5 oofer_card">
@@ -376,16 +478,7 @@ const Home = ({
               <h2 className="pb-3 font_about">
                 <span className="font_stylish">Explore</span> What we Offer
               </h2>
-              {(!HomePageContent || HomePageContent.length === 0) ? (
-                <>
-                  <div className="col-lg-3 col-md-6 col-12"><CardSkeleton /></div>
-                  <div className="col-lg-3 col-md-6 col-12"><CardSkeleton /></div>
-                  <div className="col-lg-3 col-md-6 col-12"><CardSkeleton /></div>
-                  <div className="col-lg-3 col-md-6 col-12"><CardSkeleton /></div>
-                </>
-              ) : (
-                <>
-                  <div className="col-lg-3 col-md-6 col-12">
+              <div className="col-lg-3 col-md-6 col-12">
                 <Card
                   cardNameALl="cardoffer"
                   imgSrc={HomePageContent[23]?.json_content?.image}
@@ -433,8 +526,6 @@ const Home = ({
                   linkCard={HomePageContent[21]?.json_content?.designation}
                 />
               </div>
-                </>
-              )}
 
               <div className="mt-5 text-end">
                 <a href="/what-we-offer" className="pe-2 know_more fs-6">
@@ -459,9 +550,7 @@ const Home = ({
               <div className="col-lg-2 col-md-3 col-6 ps-0">
                 <div className="box2">
                   <div className="px-3 px-lg-4 py-4">
-                    <Image src={HomePageContent[20]?.json_content?.image || "/images/default.jpg"} width={60} height={60} alt="" 
-                    priority={false}
-                    />
+                    <Image src={HomePageContent[20]?.json_content?.image} width={60} height={60} alt="" />
                     <h4 className="py-2 text-white">{HomePageContent[20]?.json_content?.title}</h4>
                     <p className="box_para">
                     {HomePageContent[20]?.json_content?.description}
@@ -482,7 +571,7 @@ const Home = ({
               <div className="col-lg-2 col-md-3 col-6 ps-0">
                 <div className="box2_data">
                 <div className="px-3 px-lg-4 py-4">
-                    <Image src={HomePageContent[19]?.json_content?.image || "/images/default.jpg"} width={60} height={60} alt=""  priority={false}/>
+                    <Image src={HomePageContent[19]?.json_content?.image} width={60} height={60} alt="" />
                     <h4 className="py-2 text-white">{HomePageContent[19]?.json_content?.title}</h4>
                     <p className="box_para">
                     {HomePageContent[19]?.json_content?.description}
@@ -503,7 +592,7 @@ const Home = ({
               <div className="col-lg-2 col-md-3 col-6 ps-0">
                 <div className="box3_data">
                 <div className="px-3 px-lg-4 py-4">
-                    <Image src={HomePageContent[18]?.json_content?.image || "/images/default.jpg"} width={60} height={60} alt="" priority={false} />
+                    <Image src={HomePageContent[18]?.json_content?.image} width={60} height={60} alt="" />
                     <h4 className="py-2 text-white">{HomePageContent[18]?.json_content?.title}</h4>
                     <p className="box_para">
                     {HomePageContent[18]?.json_content?.description}
@@ -524,7 +613,7 @@ const Home = ({
               <div className="col-lg-2 col-md-3 col-6 ps-0 mt-lg-3">
                 <div className="box4_data">
                 <div className="px-3 px-lg-4 py-4">
-                    <Image src={HomePageContent[17]?.json_content?.image || "/images/default.jpg"} width={60} height={60} alt="" priority={false} />
+                    <Image src={HomePageContent[17]?.json_content?.image} width={60} height={60} alt="" />
                     <h4 className="py-2 text-white">{HomePageContent[17]?.json_content?.title}</h4>
                     <p className="box_para">
                     {HomePageContent[17]?.json_content?.description}
@@ -545,7 +634,7 @@ const Home = ({
               <div className="col-lg-2 col-md-3 col-6 ps-0 mt-lg-3">
                 <div className="box5_data">
                 <div className="px-3 px-lg-4 py-4">
-                    <Image src={HomePageContent[16]?.json_content?.image || "/images/default.jpg"} width={60} height={60} alt="" priority={false} />
+                    <Image src={HomePageContent[16]?.json_content?.image} width={60} height={60} alt="" />
                     <h4 className="py-2 text-white">{HomePageContent[16]?.json_content?.title}</h4>
                     <p className="box_para">
                     {HomePageContent[16]?.json_content?.description}
@@ -736,7 +825,7 @@ const Home = ({
           </div>
         </div>
 
-        <div className="my-5 celebereting">
+        <LazyLoadSection className="my-5 celebereting">
           <div className="container">
             <div className="mx-0 row">
               <h3 className="text-center">
@@ -773,7 +862,7 @@ const Home = ({
               />
             </div>
           </div>
-        </div>
+        </LazyLoadSection>
 
         <div className="savedesign">
           <div className="container">
@@ -816,9 +905,7 @@ const Home = ({
           <div className="container">
             <div className="row">
               <div className="col-lg-2 col-md-3 col-3">
-                <Image src="/images/home_Icon.png" width={150} height={150} alt="home-icon" 
-                 priority={false}
-                  />
+                <Image src="/images/home_Icon.png" width={150} height={150} alt="home-icon" />
               </div>
               <div className="col-lg-10 col-md-9 col-9">
                 <div className="pt-3 text-end">
@@ -835,7 +922,7 @@ const Home = ({
           </div>
         </section>
 
-        <div className="my-5 blogs_wrapper">
+        <LazyLoadSection className="my-5 blogs_wrapper">
           <div className="container">
             <div className="row g-2 g-lg-4 justify-content-center mx-1">
               <h3 className="pb-2 pb-lg-4 text-center font_about">Blogs</h3>
@@ -917,12 +1004,14 @@ const Home = ({
               ))}
             </div>
           </div>
-        </div>
+        </LazyLoadSection>
         <hr />
-        <section className="my-5">
-          <h3 className="text-center font_stylish">What People Say</h3>
-          <VideoTestimonialSlider />
-        </section>
+        <LazyLoadSection className="my-5">
+          <section>
+            <h3 className="text-center font_stylish">What People Say</h3>
+            <VideoTestimonialSlider />
+          </section>
+        </LazyLoadSection>
         <hr />
         <section className="container-fluid my-5 iconbox">
           <div className="row justify-content-center mx-0">
