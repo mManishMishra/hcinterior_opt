@@ -5,9 +5,35 @@ import "../../public/style/style.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ClientProvider from "../store/ClientProvider";
 import Script from "next/script";
-import { ToastContainer } from "react-toastify";
+import { Great_Vibes, Poppins, Outfit } from "next/font/google";
+import dynamic from "next/dynamic";
 
-import "react-toastify/dist/ReactToastify.css";
+const LazyToast = dynamic(() => import("./common/LazyToast"), {
+  ssr: false,
+});
+
+
+const greatVibes = Great_Vibes({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400'],
+  variable: '--font-great-vibes',
+});
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500','600', '700', '800'],
+  variable: '--font-poppins',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '600'],
+  variable: '--font-outfit',
+});
+
 
 export default function RootLayout({ children }) {
   return (
@@ -69,6 +95,7 @@ export default function RootLayout({ children }) {
             height="1"
             width="1"
             style={{ display: "none" }}
+            alt="Facebook"
             src="https://www.facebook.com/tr?id=651426977052497&ev=PageView&noscript=1"
           />
         </noscript>
@@ -178,12 +205,12 @@ export default function RootLayout({ children }) {
           })}
         </Script>
       </head>
-      <body suppressHydrationWarning={false}>
-        <Script src="https://code.jquery.com/jquery-3.6.0.min.js" strategy="lazyOnload" />
-        <Script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js" strategy="lazyOnload" />
+      <body suppressHydrationWarning={false} className={`${greatVibes.variable} ${poppins.variable} ${outfit.variable}`}>
+        {/* <Script src="https://code.jquery.com/jquery-3.6.0.min.js" strategy="lazyOnload" /> */}
+        {/* <Script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js" strategy="lazyOnload" /> */}
         <AddBootstrap />
         <ClientProvider>{children}</ClientProvider>
-        <ToastContainer />
+        <LazyToast />
       </body>
     </html>
   );
